@@ -4,6 +4,8 @@ import apache.RestClient;
 import core.EntityType;
 import core.HttpRequest;
 import core.RequestType;
+import core.Response;
+import core.responsehandler.ResponseHandler;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
@@ -79,7 +81,39 @@ public class LowTrafficClient extends RestClient
         dto.setNumber(1);
 
         //We should only support this
-        System.out.println(RestClient.post(uri).headers(headers).jsonEntity(dto).setConnTimeout(100).setSocketTimeout(100).execute());
+        System.out.println(RestClient.post(uri).headers(headers).jsonEntity(dto).setConnTimeoutInSec(100).setSocketTimeoutSec(100).execute());
+
+        // We have to stop this
+//        System.out.println(new RestClient().call(new HttpRequest(RequestType.GET, uri, headers, EntityType.URLENCODED, entity)));
+    }
+
+
+
+    @Test
+    public void postJsonWithTimeoutWithHandlerSample() throws Exception
+    {
+        URI uri = new URI("https://httpbin.org/post");
+        Dto dto = new Dto();
+        dto.setName("akhil");
+        dto.setNumber(1);
+
+        ResponseHandler handler = new ResponseHandler(String.class)
+        {
+            @Override
+            public Object on2XX(Response response)
+            {
+               return response.getBody();
+            }
+
+            @Override
+            public Object on3XX(Response response) throws Exception
+            {
+                throw new Exception("lol you are screwed");
+            }
+        };
+
+        //We should only support this
+        System.out.println(RestClient.post(uri).headers(headers).jsonEntity(dto).setConnTimeoutInSec(30).setSocketTimeoutSec(30).executeWithHandler(handler));
 
         // We have to stop this
 //        System.out.println(new RestClient().call(new HttpRequest(RequestType.GET, uri, headers, EntityType.URLENCODED, entity)));

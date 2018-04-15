@@ -1,7 +1,5 @@
 package core;
 
-import core.builder.HttpRequestBuilder;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
@@ -11,8 +9,8 @@ import java.util.Map;
  */
 public interface NetClient
 {
-    final static int DEFAULT_CONN_TIMEOUT = 30;
-    final static int DEFAULT_SOCK_TIMEOUT = 30;
+    final static int DEFAULT_CONN_TIMEOUT = 30000;
+    final static int DEFAULT_SOCK_TIMEOUT = 30000;
 
     Response get(URI uri, Map<String, String> headers, int connTimeout, int sockTimeout) throws IOException;
     Response urlEncodedRequest(URI uri, RequestType type, Map<String, String> requestParams, Map<String, String> headers, int connTimeout, int sockTimeout)

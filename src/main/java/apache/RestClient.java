@@ -2,6 +2,7 @@ package apache;
 
 import com.google.gson.Gson;
 import core.*;
+import core.responsehandler.ResponseHandler;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -224,21 +225,26 @@ public class RestClient implements NetClient
             return this;
         }
 
-        public BasicHttpRequestBuilder setConnTimeout(int timeout)
+        public BasicHttpRequestBuilder setConnTimeoutInSec(int timeout)
         {
-            this.connTimeout = timeout;
+            this.connTimeout = timeout * 1000;
             return this;
         }
 
-        public BasicHttpRequestBuilder setSocketTimeout(int timeout)
+        public BasicHttpRequestBuilder setSocketTimeoutSec(int timeout)
         {
-            this.socketTimeout = timeout;
+            this.socketTimeout = timeout * 1000;
             return this;
         }
 
         public Response execute() throws IOException
         {
             return new RestClient().call(new HttpRequest(requestType, uri, headers, connTimeout, socketTimeout));
+        }
+
+        public Object executeWithHandler(ResponseHandler handler) throws Exception
+        {
+            return handler.handle(new RestClient().call(new HttpRequest(requestType, uri, headers, connTimeout, socketTimeout)));
         }
 
     }
@@ -280,15 +286,15 @@ public class RestClient implements NetClient
             return this;
         }
 
-        public HttpRequestBuilder setConnTimeout(int timeout)
+        public HttpRequestBuilder setConnTimeoutInSec(int timeout)
         {
-            this.connTimeout = timeout;
+            this.connTimeout = timeout * 1000;
             return this;
         }
 
-        public HttpRequestBuilder setSocketTimeout(int timeout)
+        public HttpRequestBuilder setSocketTimeoutSec(int timeout)
         {
-            this.socketTimeout = timeout;
+            this.socketTimeout = timeout * 1000;
             return this;
         }
 
@@ -302,5 +308,17 @@ public class RestClient implements NetClient
                                                          connTimeout,
                                                          socketTimeout));
         }
+
+        public Object executeWithHandler(ResponseHandler handler) throws Exception
+        {
+            return handler.handle(new RestClient().call(new HttpRequest(requestType,
+                                                                        uri,
+                                                                        headers,
+                                                                        entityType,
+                                                                        entity,
+                                                                        connTimeout,
+                                                                        socketTimeout)));
+        }
+
     }
 }
