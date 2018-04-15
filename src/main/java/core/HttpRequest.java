@@ -29,6 +29,17 @@ public class HttpRequest
         this.entity = entity;
     }
 
+    public HttpRequest(RequestType requestType,
+                       URI uri,
+                       Map<String, String> headers)
+    {
+        this.requestType = requestType;
+        this.uri = uri;
+        this.headers = headers;
+        this.entity = null;
+        this.entityType = EntityType.NONE;
+    }
+
     public RequestType getRequestType()
     {
         return requestType;

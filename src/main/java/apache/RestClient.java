@@ -18,6 +18,7 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,10 +28,9 @@ import java.util.stream.Collectors;
 /**
  * Created by akhil raj azhikodan on 14/4/18.
  */
-public abstract class RestClient implements NetClient
+public class RestClient implements NetClient
 {
     private static Gson gson = new Gson();
-
 
     private CloseableHttpClient getHttpClient()
     {
@@ -115,23 +115,21 @@ public abstract class RestClient implements NetClient
     {
         switch (type)
         {
-            case POST: return RequestBuilder.get();
-            case PUT: return RequestBuilder.get();
-            case DELETE: return RequestBuilder.get();
+            case POST: return RequestBuilder.post();
+            case PUT: return RequestBuilder.put();
+            case DELETE: return RequestBuilder.delete();
             default: return RequestBuilder.get();
         }
     }
 
 
-    public Response execute(HttpRequest request) throws IOException
+    public Response call(HttpRequest request) throws IOException
     {
 
         if(request.getRequestType().equals(RequestType.GET))
         {
             return get(request.getUri(), request.getHeaders());
         }
-
-
         if (request.getEntityType().equals(EntityType.URLENCODED))
         {
             return urlEncodedRequest(request.getUri(), request.getRequestType(), (Map<String, String>) request.getEntity(), request.getHeaders());
@@ -144,6 +142,87 @@ public abstract class RestClient implements NetClient
         {
             return rawRequest(request.getUri(), request.getRequestType(), (String) request.getEntity(), request.getHeaders());
         }
+    }
 
+    public static BasicHttpRequestBuilder get(URI uri) { return new BasicHttpRequestBuilder(RequestType.GET, uri); }
+
+    public static HttpRequestBuilder post(URI uri) { return new HttpRequestBuilder(RequestType.POST, uri); }
+
+    public static HttpRequestBuilder delete(URI uri) { return new HttpRequestBuilder(RequestType.DELETE, uri); }
+
+    public static HttpRequestBuilder put(URI uri) { return new HttpRequestBuilder(RequestType.PUT, uri); }
+
+
+
+
+    public static class BasicHttpRequestBuilder
+    {
+        RequestType requestType;
+        URI uri;
+
+        // default values
+        Map<String, String> headers = new HashMap<>();
+
+        BasicHttpRequestBuilder(RequestType requestType, URI uri)
+        {
+            this.requestType = requestType;
+            this.uri = uri;
+        }
+
+
+        public BasicHttpRequestBuilder headers(Map<String, String> headers)
+        {
+            this.headers = headers;
+            return this;
+        }
+
+        public Response execute() throws IOException
+        {
+            return new RestClient().call(new HttpRequest(requestType, uri, headers));
+        }
+
+    }
+
+    public static class HttpRequestBuilder extends BasicHttpRequestBuilder
+    {
+        Object entity = new Object();
+        EntityType entityType = EntityType.STRING;
+
+        public HttpRequestBuilder(RequestType requestType, URI uri)
+        {
+            super(requestType, uri);
+        }
+
+        public HttpRequestBuilder headers(Map<String, String> headers)
+        {
+            this.headers = headers;
+            return this;
+        }
+
+        public HttpRequestBuilder jsonEntity(Object object)
+        {
+            this.entityType = EntityType.JSON;
+            entity = object;
+            return this;
+        }
+
+        public HttpRequestBuilder urlEncodedEntity(Object object)
+        {
+            this.entityType = EntityType.URLENCODED;
+            entity = object;
+            return this;
+        }
+
+        public HttpRequestBuilder stringEntity(Object object)
+        {
+            this.entityType = EntityType.STRING;
+            entity = object;
+            return this;
+        }
+
+        public Response execute() throws IOException
+        {
+            return new RestClient().call(new HttpRequest(requestType, uri, headers, entityType, entity));
+        }
     }
 }

@@ -1,5 +1,7 @@
 package core;
 
+import core.builder.HttpRequestBuilder;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;

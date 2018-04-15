@@ -36,4 +36,14 @@ public class Response
     {
         return statusCode;
     }
+
+    @Override
+    public String toString()
+    {
+        return "Response{" +
+                "body='" + body + '\'' +
+                ", headers=" + headers +
+                ", statusCode=" + statusCode +
+                '}';
+    }
 }
