@@ -40,9 +40,6 @@ public class LowTrafficClient extends RestClient
 
         //We should only support this
         System.out.println(RestClient.get(uri).headers(headers).execute());
-
-        // We have to stop this
-        System.out.println(new RestClient().call(new HttpRequest(RequestType.GET, uri, headers, EntityType.URLENCODED, entity)));
     }
 
 

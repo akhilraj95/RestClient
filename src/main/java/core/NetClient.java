@@ -11,10 +11,13 @@ import java.util.Map;
  */
 public interface NetClient
 {
-    Response get(URI uri, Map<String, String> headers) throws IOException;
-    Response urlEncodedRequest(URI uri, RequestType type, Map<String, String> requestParams, Map<String, String> headers)
+    final static int DEFAULT_CONN_TIMEOUT = 30;
+    final static int DEFAULT_SOCK_TIMEOUT = 30;
+
+    Response get(URI uri, Map<String, String> headers, int connTimeout, int sockTimeout) throws IOException;
+    Response urlEncodedRequest(URI uri, RequestType type, Map<String, String> requestParams, Map<String, String> headers, int connTimeout, int sockTimeout)
             throws IOException;
-    Response jsonRequest(URI uri, RequestType type, Object request, Map<String, String> headers)
+    Response jsonRequest(URI uri, RequestType type, Object request, Map<String, String> headers, int connTimeout, int sockTimeout)
             throws IOException;
-    Response rawRequest(URI uri, RequestType type, String request, Map<String, String> headers) throws IOException;
+    Response rawRequest(URI uri, RequestType type, String request, Map<String, String> headers, int connTimeout, int sockTimeout) throws IOException;
 }

@@ -1,6 +1,8 @@
 package core;
 
 
+import lombok.Getter;
+
 import java.net.URI;
 import java.util.Map;
 
@@ -8,6 +10,7 @@ import java.util.Map;
  * Created by akhil raj azhikodan on 14/4/18.
  */
 
+@Getter
 public class HttpRequest
 {
     RequestType requestType;
@@ -16,52 +19,39 @@ public class HttpRequest
     EntityType entityType;
     Object entity;
 
+    int connTimeout;
+    int socketTimout;
+
+
     public HttpRequest(RequestType requestType,
                        URI uri,
                        Map<String, String> headers,
                        EntityType entityType,
-                       Object entity)
+                       Object entity,
+                       int connTimeout,
+                       int socketTimout)
     {
         this.requestType = requestType;
         this.uri = uri;
         this.headers = headers;
         this.entityType = entityType;
         this.entity = entity;
+        this.connTimeout = connTimeout;
+        this.socketTimout = socketTimout;
     }
 
     public HttpRequest(RequestType requestType,
                        URI uri,
-                       Map<String, String> headers)
+                       Map<String, String> headers,
+                       int connTimeout,
+                       int socketTimout)
     {
         this.requestType = requestType;
         this.uri = uri;
         this.headers = headers;
         this.entity = null;
         this.entityType = EntityType.NONE;
-    }
-
-    public RequestType getRequestType()
-    {
-        return requestType;
-    }
-
-    public URI getUri()
-    {
-        return uri;
-    }
-
-    public Map<String, String> getHeaders()
-    {
-        return headers;
-    }
-
-    public EntityType getEntityType()
-    {
-        return entityType;
-    }
-
-    public Object getEntity()
-    {
-        return entity;
+        this.connTimeout = connTimeout;
+        this.socketTimout = socketTimout;
     }
 }
