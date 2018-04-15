@@ -74,6 +74,21 @@ public class LowTrafficClient extends RestClient
     }
 
     @Test
+    public void postJsonWithTimeoutSample() throws URISyntaxException, IOException
+    {
+        URI uri = new URI("https://httpbin.org/post");
+        Dto dto = new Dto();
+        dto.setName("akhil");
+        dto.setNumber(1);
+
+        //We should only support this
+        System.out.println(RestClient.post(uri).headers(headers).jsonEntity(dto).setConnTimeout(100).setSocketTimeout(100).execute());
+
+        // We have to stop this
+//        System.out.println(new RestClient().call(new HttpRequest(RequestType.GET, uri, headers, EntityType.URLENCODED, entity)));
+    }
+
+    @Test
     public void postStringSample() throws URISyntaxException, IOException
     {
         URI uri = new URI("https://httpbin.org/post");

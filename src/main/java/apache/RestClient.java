@@ -25,7 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 
-/**
+/*
  * Created by akhil raj azhikodan on 14/4/18.
  */
 public class RestClient implements NetClient
@@ -159,6 +159,8 @@ public class RestClient implements NetClient
     {
         RequestType requestType;
         URI uri;
+        int connTimeout;
+        int socketTimeout;
 
         // default values
         Map<String, String> headers = new HashMap<>();
@@ -169,10 +171,21 @@ public class RestClient implements NetClient
             this.uri = uri;
         }
 
-
         public BasicHttpRequestBuilder headers(Map<String, String> headers)
         {
             this.headers = headers;
+            return this;
+        }
+
+        public BasicHttpRequestBuilder setConnTimeout(int timeout)
+        {
+            this.connTimeout = timeout;
+            return this;
+        }
+
+        public BasicHttpRequestBuilder setSocketTimeout(int timeout)
+        {
+            this.socketTimeout = timeout;
             return this;
         }
 
@@ -217,6 +230,18 @@ public class RestClient implements NetClient
         {
             this.entityType = EntityType.STRING;
             entity = object;
+            return this;
+        }
+
+        public HttpRequestBuilder setConnTimeout(int timeout)
+        {
+            this.connTimeout = timeout;
+            return this;
+        }
+
+        public HttpRequestBuilder setSocketTimeout(int timeout)
+        {
+            this.socketTimeout = timeout;
             return this;
         }
 
