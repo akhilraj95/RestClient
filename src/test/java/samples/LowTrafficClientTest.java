@@ -1,6 +1,5 @@
 package samples;
 
-import core.Response;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,10 +21,10 @@ public class LowTrafficClientTest {
     }
 
     @Test
-    public  void postUrlEncodedSimpleTest() throws IOException, URISyntaxException {
+    public void postUrlEncodedSimpleTest() throws IOException, URISyntaxException {
         Map<String, String> entity = new HashMap<String, String>() {{
-            put("Body1","BodyValue1");
-            put("Body2","BodyValue2");
+            put("Body1", "BodyValue1");
+            put("Body2", "BodyValue2");
         }};
         SimpleResponse response = lowTrafficClient.postUrlEncodedSample(entity);
         Assert.assertNotNull(response);

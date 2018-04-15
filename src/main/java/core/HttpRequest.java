@@ -1,8 +1,6 @@
 package core;
 
 
-import apache.RestClient;
-import core.responsehandler.ResponseHandler;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,8 +20,7 @@ import static core.NetClient.DEFAULT_SOCK_TIMEOUT;
 
 @AllArgsConstructor
 @Getter
-public class HttpRequest
-{
+public class HttpRequest {
     private RequestType requestType;
     private URI uri;
     private Map<String, String> headers;
@@ -71,8 +68,7 @@ public class HttpRequest
 //        }
     }
 
-    public static class HttpRequestBuilder extends BasicHttpRequestBuilder
-    {
+    public static class HttpRequestBuilder extends BasicHttpRequestBuilder {
         @Getter
         Object entity = new Object();
         @Getter
@@ -81,75 +77,64 @@ public class HttpRequest
         public HttpRequestBuilder() {
         }
 
-        public HttpRequestBuilder get(URI uri)
-        {
+        public HttpRequestBuilder get(URI uri) {
             this.requestType = RequestType.GET;
             this.uri = uri;
             return this;
         }
 
-        public HttpRequestBuilder post(URI uri)
-        {
+        public HttpRequestBuilder post(URI uri) {
             this.requestType = RequestType.POST;
             this.uri = uri;
             return this;
         }
 
-        public HttpRequestBuilder delete(URI uri)
-        {
+        public HttpRequestBuilder delete(URI uri) {
             this.requestType = RequestType.DELETE;
             this.uri = uri;
             return this;
         }
 
-        public HttpRequestBuilder put(URI uri)
-        {
+        public HttpRequestBuilder put(URI uri) {
             this.requestType = RequestType.PUT;
             this.uri = uri;
             return this;
         }
 
-        public HttpRequestBuilder headers(Map<String, String> headers)
-        {
+        public HttpRequestBuilder headers(Map<String, String> headers) {
             this.headers = headers;
             return this;
         }
 
-        public HttpRequestBuilder jsonEntity(Object object)
-        {
+        public HttpRequestBuilder jsonEntity(Object object) {
             this.entityType = EntityType.JSON;
             entity = object;
             return this;
         }
 
-        public HttpRequestBuilder urlEncodedEntity(Object object)
-        {
+        public HttpRequestBuilder urlEncodedEntity(Object object) {
             this.entityType = EntityType.URLENCODED;
             entity = object;
             return this;
         }
 
-        public HttpRequestBuilder stringEntity(Object object)
-        {
+        public HttpRequestBuilder stringEntity(Object object) {
             this.entityType = EntityType.STRING;
             entity = object;
             return this;
         }
 
-        public HttpRequestBuilder setConnTimeoutInSec(int timeout)
-        {
+        public HttpRequestBuilder setConnTimeoutInSec(int timeout) {
             this.connTimeout = timeout * 1000;
             return this;
         }
 
-        public HttpRequestBuilder setSocketTimeoutSec(int timeout)
-        {
+        public HttpRequestBuilder setSocketTimeoutSec(int timeout) {
             this.socketTimeout = timeout * 1000;
             return this;
         }
 
-        public HttpRequest build() throws IOException
-        {
+        public HttpRequest build() throws IOException {
             return new HttpRequest(requestType,
                     uri,
                     headers,
