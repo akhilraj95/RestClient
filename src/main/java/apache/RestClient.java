@@ -33,15 +33,18 @@ import java.util.stream.Collectors;
 public abstract class RestClient implements NetClient
 {
     private static Gson gson = new Gson();
+    private final CloseableHttpClient client;
+    public final static int CONECTION_TIMEOUT = 10000;
+    public final static int SOCKET_TIMEOUT = 10000;
 
-    private CloseableHttpClient getHttpClient(int connTimeout, int socketTimeout)
+    public RestClient()
     {
-        return HttpClients.custom()
-                .setDefaultRequestConfig(RequestConfig.custom()
-                                                 .setSocketTimeout(socketTimeout)
-                                                 .setConnectTimeout(connTimeout)
-                                                 .build())
-                .build();
+            this.client = HttpClients.custom()
+                    .setDefaultRequestConfig(RequestConfig.custom()
+                            .setSocketTimeout(CONECTION_TIMEOUT)
+                            .setConnectTimeout(SOCKET_TIMEOUT)
+                            .build())
+                    .build();
     }
 
     private void postExecutionHook(CloseableHttpClient client) throws IOException
@@ -51,10 +54,9 @@ public abstract class RestClient implements NetClient
 
     private Response executeMethod(RequestBuilder requestBuilder,
                                    URI uri,
-                                   Map<String, String> headers, int connTimeout, int sockTimeout) throws IOException
+                                   Map<String, String> headers) throws IOException
     {
         Response response;
-        CloseableHttpClient client = getHttpClient(connTimeout, sockTimeout);
 
         Optional.ofNullable(headers).ifPresent(x -> x.forEach(requestBuilder::addHeader));
         requestBuilder.setUri(uri);
@@ -80,7 +82,8 @@ public abstract class RestClient implements NetClient
     @Override
     public Response get(URI uri, Map<String, String> headers, int connTimeout, int sockTimeout) throws IOException
     {
-        return executeMethod(RequestBuilder.get(), uri, headers, connTimeout, sockTimeout);
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(sockTimeout).setSocketTimeout(connTimeout).build();
+        return executeMethod(RequestBuilder.get().setConfig(requestConfig), uri, headers);
     }
 
     @Override
@@ -90,6 +93,7 @@ public abstract class RestClient implements NetClient
                                       Map<String, String> headers, int connTimeout, int sockTimeout)
             throws IOException
     {
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(sockTimeout).setSocketTimeout(connTimeout).build();
         List<NameValuePair> params = requestParams.entrySet()
                 .stream()
                 .map(x -> new BasicNameValuePair(x.getKey(), x.getValue()))
@@ -97,8 +101,8 @@ public abstract class RestClient implements NetClient
 
         headers.put(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.toString());
 
-        RequestBuilder requestBuilder = getRequestBuilder(type).setEntity(new UrlEncodedFormEntity(params));
-        return executeMethod(requestBuilder, uri, headers, connTimeout, sockTimeout);
+        RequestBuilder requestBuilder = getRequestBuilder(type).setEntity(new UrlEncodedFormEntity(params)).setConfig(requestConfig);
+        return executeMethod(requestBuilder, uri, headers);
     }
 
     @Override
@@ -110,10 +114,11 @@ public abstract class RestClient implements NetClient
                                 int sockTimeout)
             throws IOException
     {
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(sockTimeout).setSocketTimeout(connTimeout).build();
         headers.put(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
         RequestBuilder requestBuilder = getRequestBuilder(type)
-                .setEntity(new ByteArrayEntity(gson.toJson(request).getBytes()));
-        return executeMethod(requestBuilder, uri, headers, connTimeout, sockTimeout);
+                .setEntity(new ByteArrayEntity(gson.toJson(request).getBytes())).setConfig(requestConfig);
+        return executeMethod(requestBuilder, uri, headers);
     }
 
     @Override
@@ -125,8 +130,9 @@ public abstract class RestClient implements NetClient
                                int sockTimeout)
             throws IOException
     {
-        RequestBuilder requestBuilder = getRequestBuilder(type).setEntity(new ByteArrayEntity(request.getBytes()));
-        return executeMethod(requestBuilder, uri, headers, connTimeout, sockTimeout);
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(sockTimeout).setSocketTimeout(connTimeout).build();
+        RequestBuilder requestBuilder = getRequestBuilder(type).setEntity(new ByteArrayEntity(request.getBytes())).setConfig(requestConfig);
+        return executeMethod(requestBuilder, uri, headers);
     }
 
 

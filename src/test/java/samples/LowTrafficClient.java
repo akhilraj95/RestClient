@@ -1,6 +1,8 @@
 package samples;
 
 import apache.RestClient;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import core.HttpRequest;
 import core.Response;
 import core.responsehandler.ResponseHandler;
@@ -8,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -31,63 +34,48 @@ public class LowTrafficClient extends RestClient
     }};
 
 
+    private static final Gson gson  = new Gson();
 
 
-    public Response getSample() throws URISyntaxException, IOException
+
+    public SimpleResponse getSample() throws URISyntaxException, IOException
     {
 
         URI uri = new URI("https://httpbin.org/get");
 
-        //We should only support this
-     return   call(new HttpRequest.HttpRequestBuilder().get(uri).headers(headers).build());
-//        Assert.assertNotNull(response.getHeaders());
-//        System.out.println(RestClient.get(uri).headers(headers).execute());
+     Response response = call(new HttpRequest.HttpRequestBuilder().get(uri).headers(headers).build());
+     if(response.getStatusCode()!=200){
+         throw new RuntimeException("request failed");
+     }
+     return gson.fromJson(response.getBody(), SimpleResponse.class);
     }
 
 
 
-    public Response postUrlEncodedSample() throws URISyntaxException, IOException
+    public SimpleResponse postUrlEncodedSample(Map<String, String> entity) throws URISyntaxException, IOException
     {
         URI uri = new URI("https://httpbin.org/post");
 
-        //We should only support this
-        return call(new HttpRequest.HttpRequestBuilder().post(uri).headers(headers).urlEncodedEntity(entity).build());
-//        System.out.println(RestClient.post(uri).headers(headers).urlEncodedEntity(entity).execute());
-
-        // We have to stop this
-//        System.out.println(new RestClient().call(new HttpRequest(RequestType.GET, uri, headers, EntityType.URLENCODED, entity)));
+        Response response = call(new HttpRequest.HttpRequestBuilder().post(uri).headers(headers).urlEncodedEntity(entity).build());
+        return gson.fromJson(response.getBody(), SimpleResponse.class);
     }
 
 
-    public Response postJsonSample() throws URISyntaxException, IOException
+    public Dto postJsonSample(Dto dto) throws URISyntaxException, IOException
     {
         URI uri = new URI("https://httpbin.org/post");
-        Dto dto = new Dto();
-        dto.setName("akhil");
-        dto.setNumber(1);
 
-        return call(new HttpRequest.HttpRequestBuilder().post(uri).headers(headers).jsonEntity(dto).build());
-        //We should only support this
-//        System.out.println(RestClient.post(uri).headers(headers).jsonEntity(dto).execute());
-
-        // We have to stop this
-//        System.out.println(new RestClient().call(new HttpRequest(RequestType.GET, uri, headers, EntityType.URLENCODED, entity)));
+        Response response = call(new HttpRequest.HttpRequestBuilder().post(uri).headers(headers).jsonEntity(dto).build());
+        return gson.fromJson(response.getBody(), Dto.class);
     }
 
 
-    public Response postJsonWithTimeoutSample() throws URISyntaxException, IOException
+    public SimpleResponse postJsonWithTimeoutSample(Dto dto) throws URISyntaxException, IOException
     {
         URI uri = new URI("https://httpbin.org/post");
-        Dto dto = new Dto();
-        dto.setName("akhil");
-        dto.setNumber(1);
 
-return call(new HttpRequest.HttpRequestBuilder().post(uri).headers(headers).jsonEntity(dto).setConnTimeoutInSec(100).setSocketTimeoutSec(100).build());
-        //We should only support this
-//        System.out.println(RestClient.post(uri).headers(headers).jsonEntity(dto).setConnTimeoutInSec(100).setSocketTimeoutSec(100).execute());
-
-        // We have to stop this
-//        System.out.println(new RestClient().call(new HttpRequest(RequestType.GET, uri, headers, EntityType.URLENCODED, entity)));
+Response response = call(new HttpRequest.HttpRequestBuilder().post(uri).headers(headers).jsonEntity(dto).setConnTimeoutInSec(100).setSocketTimeoutSec(100).build());
+return gson.fromJson(response.getBody(), new TypeToken<SimpleResponse<Dto>>(){}.getType());
     }
 
 
@@ -124,16 +112,11 @@ return handler.handle(call(new HttpRequest.HttpRequestBuilder().post(uri).header
     }
 
 
-    public Response postStringSample() throws URISyntaxException, IOException
+    public SimpleResponse postStringSample(String entity) throws URISyntaxException, IOException
     {
         URI uri = new URI("https://httpbin.org/post");
-        String entity = "<xml>test</xml>";
 
-        return call(new HttpRequest.HttpRequestBuilder().post(uri).headers(headers).stringEntity(entity).setConnTimeoutInSec(100).setSocketTimeoutSec(100).build());
-        //We should only support this
-//        System.out.println(RestClient.post(uri).headers(headers).stringEntity("<xml>test</xml>").execute());
-
-        // We have to stop this
-//        System.out.println(new RestClient().call(new HttpRequest(RequestType.GET, uri, headers, EntityType.URLENCODED, entity)));
+        Response response = call(new HttpRequest.HttpRequestBuilder().post(uri).headers(headers).stringEntity(entity).setConnTimeoutInSec(100).setSocketTimeoutSec(100).build());
+        return gson.fromJson(response.getBody(), SimpleResponse.class);
     }
 }
