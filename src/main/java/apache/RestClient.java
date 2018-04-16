@@ -2,7 +2,6 @@ package apache;
 
 import com.google.gson.Gson;
 import core.*;
-import core.responsehandler.ResponseHandler;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -20,7 +19,7 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,57 +29,58 @@ import java.util.stream.Collectors;
 /*
  * Created by akhil raj azhikodan on 14/4/18.
  */
-public class RestClient implements NetClient
-{
+public abstract class RestClient implements NetClient {
+    public final static int CONECTION_TIMEOUT = 10000;
+    public final static int SOCKET_TIMEOUT = 10000;
     private static Gson gson = new Gson();
+    private final CloseableHttpClient client;
 
-    private CloseableHttpClient getHttpClient(int connTimeout, int socketTimeout)
-    {
-        return HttpClients.custom()
+    public RestClient() {
+        this.client = HttpClients.custom()
                 .setDefaultRequestConfig(RequestConfig.custom()
-                                                 .setSocketTimeout(socketTimeout)
-                                                 .setConnectTimeout(connTimeout)
-                                                 .build())
+                        .setSocketTimeout(CONECTION_TIMEOUT)
+                        .setConnectTimeout(SOCKET_TIMEOUT)
+                        .build())
                 .build();
     }
 
-    private void postExecutionHook(CloseableHttpClient client) throws IOException
-    {
-        client.close();
+
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            client.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private Response executeMethod(RequestBuilder requestBuilder,
                                    URI uri,
-                                   Map<String, String> headers, int connTimeout, int sockTimeout) throws IOException
-    {
+                                   Map<String, String> headers) throws IOException {
         Response response;
-        CloseableHttpClient client = getHttpClient(connTimeout, sockTimeout);
 
         Optional.ofNullable(headers).ifPresent(x -> x.forEach(requestBuilder::addHeader));
         requestBuilder.setUri(uri);
 
-        try (CloseableHttpResponse httpResponse = client.execute(requestBuilder.build()))
-        {
+        try (CloseableHttpResponse httpResponse = client.execute(requestBuilder.build())) {
             HttpEntity entity = httpResponse.getEntity();
 
-            String
-                    responseString =
-                    (Optional.ofNullable(entity).isPresent()) ? EntityUtils.toString(entity, "UTF-8") : null;
-            Header[] responseHeaders = httpResponse.getAllHeaders();
+            String responseString = (Optional.ofNullable(entity).isPresent()) ? EntityUtils.toString(entity, "UTF-8") : null;
             int statuscode = httpResponse.getStatusLine().getStatusCode();
+            Map<String, String> responseHeaders = Arrays.asList(httpResponse.getAllHeaders()).stream().
+                    collect(Collectors.toMap(Header::getName, Header::getValue));
 
             response = new Response(responseString, responseHeaders, statuscode);
             EntityUtils.consume(entity);
         }
-        postExecutionHook(client);
         return response;
     }
 
 
     @Override
-    public Response get(URI uri, Map<String, String> headers, int connTimeout, int sockTimeout) throws IOException
-    {
-        return executeMethod(RequestBuilder.get(), uri, headers, connTimeout, sockTimeout);
+    public Response get(URI uri, Map<String, String> headers, int connTimeout, int sockTimeout) throws IOException {
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(sockTimeout).setSocketTimeout(connTimeout).build();
+        return executeMethod(RequestBuilder.get().setConfig(requestConfig), uri, headers);
     }
 
     @Override
@@ -88,8 +88,8 @@ public class RestClient implements NetClient
                                       RequestType type,
                                       Map<String, String> requestParams,
                                       Map<String, String> headers, int connTimeout, int sockTimeout)
-            throws IOException
-    {
+            throws IOException {
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(sockTimeout).setSocketTimeout(connTimeout).build();
         List<NameValuePair> params = requestParams.entrySet()
                 .stream()
                 .map(x -> new BasicNameValuePair(x.getKey(), x.getValue()))
@@ -97,8 +97,8 @@ public class RestClient implements NetClient
 
         headers.put(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.toString());
 
-        RequestBuilder requestBuilder = getRequestBuilder(type).setEntity(new UrlEncodedFormEntity(params));
-        return executeMethod(requestBuilder, uri, headers, connTimeout, sockTimeout);
+        RequestBuilder requestBuilder = getRequestBuilder(type).setEntity(new UrlEncodedFormEntity(params)).setConfig(requestConfig);
+        return executeMethod(requestBuilder, uri, headers);
     }
 
     @Override
@@ -108,12 +108,12 @@ public class RestClient implements NetClient
                                 Map<String, String> headers,
                                 int connTimeout,
                                 int sockTimeout)
-            throws IOException
-    {
+            throws IOException {
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(sockTimeout).setSocketTimeout(connTimeout).build();
         headers.put(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
         RequestBuilder requestBuilder = getRequestBuilder(type)
-                .setEntity(new ByteArrayEntity(gson.toJson(request).getBytes()));
-        return executeMethod(requestBuilder, uri, headers, connTimeout, sockTimeout);
+                .setEntity(new ByteArrayEntity(gson.toJson(request).getBytes())).setConfig(requestConfig);
+        return executeMethod(requestBuilder, uri, headers);
     }
 
     @Override
@@ -123,17 +123,15 @@ public class RestClient implements NetClient
                                Map<String, String> headers,
                                int connTimeout,
                                int sockTimeout)
-            throws IOException
-    {
-        RequestBuilder requestBuilder = getRequestBuilder(type).setEntity(new ByteArrayEntity(request.getBytes()));
-        return executeMethod(requestBuilder, uri, headers, connTimeout, sockTimeout);
+            throws IOException {
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(sockTimeout).setSocketTimeout(connTimeout).build();
+        RequestBuilder requestBuilder = getRequestBuilder(type).setEntity(new ByteArrayEntity(request.getBytes())).setConfig(requestConfig);
+        return executeMethod(requestBuilder, uri, headers);
     }
 
 
-    RequestBuilder getRequestBuilder(RequestType type)
-    {
-        switch (type)
-        {
+    RequestBuilder getRequestBuilder(RequestType type) {
+        switch (type) {
             case POST:
                 return RequestBuilder.post();
             case PUT:
@@ -146,179 +144,34 @@ public class RestClient implements NetClient
     }
 
 
-    public Response call(HttpRequest request) throws IOException
-    {
+    public Response call(HttpRequest request) throws IOException {
 
-        if (request.getRequestType().equals(RequestType.GET))
-        {
+        if (request.getRequestType().equals(RequestType.GET)) {
             return get(request.getUri(), request.getHeaders(), request.getConnTimeout(), request.getSocketTimout());
         }
-        if (request.getEntityType().equals(EntityType.URLENCODED))
-        {
+        if (request.getEntityType().equals(EntityType.URLENCODED)) {
             return urlEncodedRequest(request.getUri(),
-                                     request.getRequestType(),
-                                     (Map<String, String>) request.getEntity(),
-                                     request.getHeaders(),
-                                     request.getConnTimeout(),
-                                     request.getSocketTimout());
-        }
-        else if (request.getEntityType().equals(EntityType.JSON))
-        {
+                    request.getRequestType(),
+                    (Map<String, String>) request.getEntity().get(),
+                    request.getHeaders(),
+                    request.getConnTimeout(),
+                    request.getSocketTimout());
+        } else if (request.getEntityType().equals(EntityType.JSON)) {
             return jsonRequest(request.getUri(),
-                               request.getRequestType(),
-                               request.getEntity(),
-                               request.getHeaders(),
-                               request.getConnTimeout(),
-                               request.getSocketTimout());
-        }
-        else
-        {
+                    request.getRequestType(),
+                    request.getEntity(),
+                    request.getHeaders(),
+                    request.getConnTimeout(),
+                    request.getSocketTimout());
+        } else {
             return rawRequest(request.getUri(),
-                              request.getRequestType(),
-                              (String) request.getEntity(),
-                              request.getHeaders(),
-                              request.getConnTimeout(),
-                              request.getSocketTimout());
+                    request.getRequestType(),
+                    (String) request.getEntity().get(),
+                    request.getHeaders(),
+                    request.getConnTimeout(),
+                    request.getSocketTimout());
         }
     }
 
-    public static BasicHttpRequestBuilder get(URI uri)
-    {
-        return new BasicHttpRequestBuilder(RequestType.GET, uri);
-    }
 
-    public static HttpRequestBuilder post(URI uri)
-    {
-        return new HttpRequestBuilder(RequestType.POST, uri);
-    }
-
-    public static HttpRequestBuilder delete(URI uri)
-    {
-        return new HttpRequestBuilder(RequestType.DELETE, uri);
-    }
-
-    public static HttpRequestBuilder put(URI uri)
-    {
-        return new HttpRequestBuilder(RequestType.PUT, uri);
-    }
-
-
-    public static class BasicHttpRequestBuilder
-    {
-        RequestType requestType;
-        URI uri;
-        int connTimeout = DEFAULT_CONN_TIMEOUT;
-        int socketTimeout = DEFAULT_SOCK_TIMEOUT;
-
-        // default values
-        Map<String, String> headers = new HashMap<>();
-
-        BasicHttpRequestBuilder(RequestType requestType, URI uri)
-        {
-            this.requestType = requestType;
-            this.uri = uri;
-        }
-
-        public BasicHttpRequestBuilder headers(Map<String, String> headers)
-        {
-            this.headers = headers;
-            return this;
-        }
-
-        public BasicHttpRequestBuilder setConnTimeoutInSec(int timeout)
-        {
-            this.connTimeout = timeout * 1000;
-            return this;
-        }
-
-        public BasicHttpRequestBuilder setSocketTimeoutSec(int timeout)
-        {
-            this.socketTimeout = timeout * 1000;
-            return this;
-        }
-
-        public Response execute() throws IOException
-        {
-            return new RestClient().call(new HttpRequest(requestType, uri, headers, connTimeout, socketTimeout));
-        }
-
-        public Object executeWithHandler(ResponseHandler handler) throws Exception
-        {
-            return handler.handle(new RestClient().call(new HttpRequest(requestType, uri, headers, connTimeout, socketTimeout)));
-        }
-
-    }
-
-    public static class HttpRequestBuilder extends BasicHttpRequestBuilder
-    {
-        Object entity = new Object();
-        EntityType entityType = EntityType.STRING;
-
-        public HttpRequestBuilder(RequestType requestType, URI uri)
-        {
-            super(requestType, uri);
-        }
-
-        public HttpRequestBuilder headers(Map<String, String> headers)
-        {
-            this.headers = headers;
-            return this;
-        }
-
-        public HttpRequestBuilder jsonEntity(Object object)
-        {
-            this.entityType = EntityType.JSON;
-            entity = object;
-            return this;
-        }
-
-        public HttpRequestBuilder urlEncodedEntity(Object object)
-        {
-            this.entityType = EntityType.URLENCODED;
-            entity = object;
-            return this;
-        }
-
-        public HttpRequestBuilder stringEntity(Object object)
-        {
-            this.entityType = EntityType.STRING;
-            entity = object;
-            return this;
-        }
-
-        public HttpRequestBuilder setConnTimeoutInSec(int timeout)
-        {
-            this.connTimeout = timeout * 1000;
-            return this;
-        }
-
-        public HttpRequestBuilder setSocketTimeoutSec(int timeout)
-        {
-            this.socketTimeout = timeout * 1000;
-            return this;
-        }
-
-        public Response execute() throws IOException
-        {
-            return new RestClient().call(new HttpRequest(requestType,
-                                                         uri,
-                                                         headers,
-                                                         entityType,
-                                                         entity,
-                                                         connTimeout,
-                                                         socketTimeout));
-        }
-
-        public Object executeWithHandler(ResponseHandler handler) throws Exception
-        {
-            return handler.handle(new RestClient().call(new HttpRequest(requestType,
-                                                                        uri,
-                                                                        headers,
-                                                                        entityType,
-                                                                        entity,
-                                                                        connTimeout,
-                                                                        socketTimeout)));
-        }
-
-    }
 }
