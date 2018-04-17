@@ -1,5 +1,6 @@
 package core;
 
+import com.sun.istack.internal.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.http.Header;
@@ -13,8 +14,9 @@ import java.util.Map;
  */
 @AllArgsConstructor
 @Getter
-public class Response {
-    private final String body;
+public class Response<T> {
+    @Nullable
+    private final T body;
     private final Map<String, String> headers;
     private final int statusCode;
 }
