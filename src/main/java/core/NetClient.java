@@ -1,8 +1,9 @@
 package core;
 
+import core.request.HttpRequest;
+import core.response.Response;
+
 import java.io.IOException;
-import java.net.URI;
-import java.util.Map;
 
 /**
  * Created by akhil raj azhikodan on 14/4/18.

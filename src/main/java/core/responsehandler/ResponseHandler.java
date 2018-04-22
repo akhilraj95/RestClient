@@ -1,6 +1,6 @@
 package core.responsehandler;
 
-import core.Response;
+import core.response.Response;
 
 import java.io.IOException;
 

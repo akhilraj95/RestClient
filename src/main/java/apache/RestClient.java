@@ -2,7 +2,9 @@ package apache;
 
 import com.google.gson.Gson;
 import core.*;
-import core.HttpRequest;
+import core.request.HttpRequest;
+import core.response.BasicResponse;
+import core.response.Response;
 import core.responsehandler.ResponseHandler;
 import org.apache.http.*;
 import org.apache.http.client.config.RequestConfig;
@@ -24,14 +26,14 @@ import java.util.stream.Collectors;
 
 
 /*
- * Created by akhil raj azhikodan on 14/4/18.
+ *  This class is the NetClient implementation with Apache HttpClient.
  */
 public abstract class RestClient implements NetClient {
     public final static int CONECTION_TIMEOUT = 10000;
     public final static int SOCKET_TIMEOUT = 10000;
     private static Gson gson = new Gson();
     private final CloseableHttpClient client;
-    private final ResponseHandler<HttpResponse, String> defaultHandler = new StringHandler<>();
+    private final ResponseHandler<HttpResponse, String> defaultHandler = new StringHandler();
 
     public RestClient() {
         this.client = HttpClients.custom()
@@ -133,36 +135,36 @@ public abstract class RestClient implements NetClient {
 
 
     @Override
-    public Response call(HttpRequest request) throws IOException {
+    public BasicResponse call(HttpRequest request) throws IOException {
 
         if (request.getRequestType().equals(RequestType.GET)) {
-            return get(request.getUri(), request.getHeaders(), request.getConnTimeout(), request.getSocketTimout(),
-                    Optional.ofNullable((ResponseHandler<HttpResponse, ?>) request.getHandler()));
+            return (BasicResponse) get(request.getUri(), request.getHeaders(), request.getConnTimeout(), request.getSocketTimout(),
+                                       Optional.ofNullable((ResponseHandler<HttpResponse, ?>) request.getHandler()));
         }
         if (request.getEntityType().equals(EntityType.URLENCODED)) {
-            return urlEncodedRequest(request.getUri(),
-                    request.getRequestType(),
-                    (Map<String, String>) request.getEntity().get(),
-                    request.getHeaders(),
-                    request.getConnTimeout(),
-                    request.getSocketTimout(),
-                    Optional.ofNullable((ResponseHandler<HttpResponse, ?>) request.getHandler()));
+            return (BasicResponse) urlEncodedRequest(request.getUri(),
+                                                     request.getRequestType(),
+                                                     (Map<String, String>) request.getEntity().get(),
+                                                     request.getHeaders(),
+                                                     request.getConnTimeout(),
+                                                     request.getSocketTimout(),
+                                                     Optional.ofNullable((ResponseHandler<HttpResponse, ?>) request.getHandler()));
         } else if (request.getEntityType().equals(EntityType.JSON)) {
-            return jsonRequest(request.getUri(),
-                    request.getRequestType(),
-                    request.getEntity(),
-                    request.getHeaders(),
-                    request.getConnTimeout(),
-                    request.getSocketTimout(),
-                    Optional.ofNullable((ResponseHandler<HttpResponse, ?>) request.getHandler()));
+            return (BasicResponse) jsonRequest(request.getUri(),
+                                               request.getRequestType(),
+                                               request.getEntity(),
+                                               request.getHeaders(),
+                                               request.getConnTimeout(),
+                                               request.getSocketTimout(),
+                                               Optional.ofNullable((ResponseHandler<HttpResponse, ?>) request.getHandler()));
         } else {
-            return rawRequest(request.getUri(),
-                    request.getRequestType(),
-                    (String) request.getEntity().get(),
-                    request.getHeaders(),
-                    request.getConnTimeout(),
-                    request.getSocketTimout(),
-                    Optional.ofNullable((ResponseHandler<HttpResponse, ?>) request.getHandler()));
+            return (BasicResponse) rawRequest(request.getUri(),
+                                              request.getRequestType(),
+                                              (String) request.getEntity().get(),
+                                              request.getHeaders(),
+                                              request.getConnTimeout(),
+                                              request.getSocketTimout(),
+                                              Optional.ofNullable((ResponseHandler<HttpResponse, ?>) request.getHandler()));
         }
     }
 

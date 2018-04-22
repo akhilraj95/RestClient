@@ -1,5 +1,6 @@
-package core;
+package core.response;
 
+import com.google.gson.Gson;
 import com.sun.istack.internal.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,8 +16,11 @@ import java.util.Map;
 @AllArgsConstructor
 @Getter
 public class Response<T> {
+
+    static Gson gson = new Gson();
+
     @Nullable
-    private final T body;
-    private final Map<String, String> headers;
-    private final int statusCode;
+    protected final T body;
+    protected final Map<String, String> headers;
+    protected final int statusCode;
 }
