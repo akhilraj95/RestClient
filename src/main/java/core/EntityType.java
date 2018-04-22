@@ -6,6 +6,5 @@ package core;
 public enum EntityType {
     JSON,
     URLENCODED,
-    NONE,
     STRING
 }

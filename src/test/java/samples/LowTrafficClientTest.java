@@ -18,6 +18,9 @@ public class LowTrafficClientTest {
     public void getSimpleTest() throws IOException, URISyntaxException {
         SimpleResponse response = lowTrafficClient.getSample();
         Assert.assertNotNull(response);
+        Map<String, String> headers = response.getHeaders();
+        Assert.assertTrue(headers.containsKey("Header1"));
+        Assert.assertTrue(headers.containsKey("Header2"));
     }
 
     @Test
@@ -43,7 +46,7 @@ public class LowTrafficClientTest {
 
     @Test
     public void postJsonWithTimeoutWithHandlerSampleTest() throws Exception {
-        Object response = lowTrafficClient.postJsonWithTimeoutWithHandlerSample();
+        SimpleResponse response = lowTrafficClient.postJsonWithTimeoutWithHandlerSample();
         Assert.assertNotNull(response);
     }
 

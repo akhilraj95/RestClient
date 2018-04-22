@@ -1,9 +1,9 @@
 package core;
 
 
+import core.responsehandler.ResponseHandler;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.io.IOException;
 import java.net.URI;
@@ -28,37 +28,38 @@ public class HttpRequest {
     private Optional<Object> entity;
     private int connTimeout;
     private int socketTimout;
+    private ResponseHandler<?,?> handler;
 
-    @NoArgsConstructor
-    public static class BasicHttpRequestBuilder {
-        RequestType requestType;
-        URI uri;
-        int connTimeout = DEFAULT_CONN_TIMEOUT;
-        int socketTimeout = DEFAULT_SOCK_TIMEOUT;
-
-        // default values
-        Map<String, String> headers = new HashMap<>();
-
-        BasicHttpRequestBuilder(RequestType requestType, URI uri) {
-            this.requestType = requestType;
-            this.uri = uri;
-        }
-
-        public BasicHttpRequestBuilder headers(Map<String, String> headers) {
-            this.headers = headers;
-            return this;
-        }
-
-        public BasicHttpRequestBuilder setConnTimeoutInSec(int timeout) {
-            this.connTimeout = timeout * 1000;
-            return this;
-        }
-
-        public BasicHttpRequestBuilder setSocketTimeoutSec(int timeout) {
-            this.socketTimeout = timeout * 1000;
-            return this;
-        }
-
+//    @NoArgsConstructor
+//    public static class BasicHttpRequestBuilder {
+//        RequestType requestType;
+//        URI uri;
+//        int connTimeout = DEFAULT_CONN_TIMEOUT;
+//        int socketTimeout = DEFAULT_SOCK_TIMEOUT;
+//
+//         default values
+//        Map<String, String> headers = new HashMap<>();
+//
+//        BasicHttpRequestBuilder(RequestType requestType, URI uri) {
+//            this.requestType = requestType;
+//            this.uri = uri;
+//        }
+//
+//        public BasicHttpRequestBuilder headers(Map<String, String> headers) {
+//            this.headers = headers;
+//            return this;
+//        }
+//
+//        public BasicHttpRequestBuilder setConnTimeoutInSec(int timeout) {
+//            this.connTimeout = timeout * 1000;
+//            return this;
+//        }
+//
+//        public BasicHttpRequestBuilder setSocketTimeoutSec(int timeout) {
+//            this.socketTimeout = timeout * 1000;
+//            return this;
+//        }
+//
 //        public Response execute() throws IOException {
 //            return new RestClient().call(new HttpRequest(requestType, uri, headers, connTimeout, socketTimeout));
 //        }
@@ -66,13 +67,21 @@ public class HttpRequest {
 //        public Object executeWithHandler(ResponseHandler handler) throws Exception {
 //            return handler.handle(new RestClient().call(new HttpRequest(requestType, uri, headers, connTimeout, socketTimeout)));
 //        }
-    }
+//    }
 
-    public static class HttpRequestBuilder extends BasicHttpRequestBuilder {
+    public static class HttpRequestBuilder {
+        RequestType requestType;
+        URI uri;
+        int connTimeout = DEFAULT_CONN_TIMEOUT;
+        int socketTimeout = DEFAULT_SOCK_TIMEOUT;
         @Getter
         Object entity = new Object();
         @Getter
         EntityType entityType = EntityType.STRING;
+        private ResponseHandler<?,?> handler;
+//         default values
+        Map<String, String> headers = new HashMap<>();
+
 
         public HttpRequestBuilder() {
         }
@@ -134,6 +143,11 @@ public class HttpRequest {
             return this;
         }
 
+        public HttpRequestBuilder setHandler(ResponseHandler<?,?> handler) {
+            this.handler = handler;
+            return this;
+        }
+
         public HttpRequest build() throws IOException {
             return new HttpRequest(requestType,
                     uri,
@@ -141,7 +155,8 @@ public class HttpRequest {
                     entityType,
                     Optional.of(entity),
                     connTimeout,
-                    socketTimeout);
+                    socketTimeout,
+                    handler);
         }
 
 //        public Object executeWithHandler(ResponseHandler handler) throws Exception
