@@ -56,7 +56,7 @@ public class HttpRequestBuilder
         return this;
     }
 
-    public HttpRequest build() throws IOException
+    public HttpRequest build()
     {
         return new HttpRequest(requestType,
                                uri,

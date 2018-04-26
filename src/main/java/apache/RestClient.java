@@ -1,9 +1,9 @@
 package apache;
 
+import apache.handler.StringHandler;
 import com.google.gson.Gson;
 import core.*;
 import core.request.HttpRequest;
-import core.response.BasicResponse;
 import core.response.Response;
 import core.responsehandler.ResponseHandler;
 import org.apache.http.*;
@@ -63,18 +63,18 @@ public abstract class RestClient implements NetClient {
     }
 
 
-    private Response get(URI uri, Map<String, String> headers, int connTimeout, int sockTimeout, Optional<ResponseHandler<HttpResponse,?>> handler) throws IOException {
+    private Response<?> get(URI uri, Map<String, String> headers, int connTimeout, int sockTimeout, Optional<ResponseHandler<HttpResponse,?>> handler) throws IOException {
         RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(sockTimeout).setSocketTimeout(connTimeout).build();
         RequestBuilder requestBuilder = RequestBuilder.get().setConfig(requestConfig).setUri(uri);
         headers.forEach(requestBuilder::addHeader);
         return executeMethod(requestBuilder, handler);
     }
 
-    private Response urlEncodedRequest(URI uri,
-                                      RequestType type,
-                                      Map<String, String> requestParams,
-                                      Map<String, String> headers, int connTimeout, int sockTimeout,
-                                      Optional<ResponseHandler<HttpResponse,?>> handler)
+    private Response<?> urlEncodedRequest(URI uri,
+                                          RequestType type,
+                                          Map<String, String> requestParams,
+                                          Map<String, String> headers, int connTimeout, int sockTimeout,
+                                          Optional<ResponseHandler<HttpResponse,?>> handler)
             throws IOException {
         RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(sockTimeout).setSocketTimeout(connTimeout).build();
         List<NameValuePair> params = requestParams.entrySet()
@@ -89,13 +89,13 @@ public abstract class RestClient implements NetClient {
         return executeMethod(requestBuilder, handler);
     }
 
-    private Response jsonRequest(URI uri,
-                                RequestType type,
-                                Object request,
-                                Map<String, String> headers,
-                                int connTimeout,
-                                int sockTimeout,
-                                Optional<ResponseHandler<HttpResponse,?>> handler)
+    private Response<?> jsonRequest(URI uri,
+                                    RequestType type,
+                                    Object request,
+                                    Map<String, String> headers,
+                                    int connTimeout,
+                                    int sockTimeout,
+                                    Optional<ResponseHandler<HttpResponse,?>> handler)
             throws IOException {
         RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(sockTimeout).setSocketTimeout(connTimeout).build();
         headers.put(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
@@ -105,13 +105,13 @@ public abstract class RestClient implements NetClient {
         return executeMethod(requestBuilder, handler);
     }
 
-    private Response rawRequest(URI uri,
-                               RequestType type,
-                               String request,
-                               Map<String, String> headers,
-                               int connTimeout,
-                               int sockTimeout,
-                               Optional<ResponseHandler<HttpResponse,?>> handler)
+    private Response<?> rawRequest(URI uri,
+                                   RequestType type,
+                                   String request,
+                                   Map<String, String> headers,
+                                   int connTimeout,
+                                   int sockTimeout,
+                                   Optional<ResponseHandler<HttpResponse,?>> handler)
             throws IOException {
         RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(sockTimeout).setSocketTimeout(connTimeout).build();
         RequestBuilder requestBuilder = getRequestBuilder(type).setEntity(new ByteArrayEntity(request.getBytes())).setConfig(requestConfig).setUri(uri);
@@ -135,14 +135,14 @@ public abstract class RestClient implements NetClient {
 
 
     @Override
-    public BasicResponse call(HttpRequest request) throws IOException {
+    public Response<?> call(HttpRequest request) throws IOException {
 
         if (request.getRequestType().equals(RequestType.GET)) {
-            return (BasicResponse) get(request.getUri(), request.getHeaders(), request.getConnTimeout(), request.getSocketTimout(),
+            return get(request.getUri(), request.getHeaders(), request.getConnTimeout(), request.getSocketTimout(),
                                        Optional.ofNullable((ResponseHandler<HttpResponse, ?>) request.getHandler()));
         }
         if (request.getEntityType().equals(EntityType.URLENCODED)) {
-            return (BasicResponse) urlEncodedRequest(request.getUri(),
+            return urlEncodedRequest(request.getUri(),
                                                      request.getRequestType(),
                                                      (Map<String, String>) request.getEntity().get(),
                                                      request.getHeaders(),
@@ -150,7 +150,7 @@ public abstract class RestClient implements NetClient {
                                                      request.getSocketTimout(),
                                                      Optional.ofNullable((ResponseHandler<HttpResponse, ?>) request.getHandler()));
         } else if (request.getEntityType().equals(EntityType.JSON)) {
-            return (BasicResponse) jsonRequest(request.getUri(),
+            return jsonRequest(request.getUri(),
                                                request.getRequestType(),
                                                request.getEntity(),
                                                request.getHeaders(),
@@ -158,7 +158,7 @@ public abstract class RestClient implements NetClient {
                                                request.getSocketTimout(),
                                                Optional.ofNullable((ResponseHandler<HttpResponse, ?>) request.getHandler()));
         } else {
-            return (BasicResponse) rawRequest(request.getUri(),
+            return rawRequest(request.getUri(),
                                               request.getRequestType(),
                                               (String) request.getEntity().get(),
                                               request.getHeaders(),

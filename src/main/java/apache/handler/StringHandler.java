@@ -1,7 +1,7 @@
-package apache;
+package apache.handler;
 
+import apache.ResponseHandlerException;
 import core.response.BasicResponse;
-import core.response.Response;
 import core.responsehandler.ResponseHandler;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -15,11 +15,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class StringHandler implements ResponseHandler<HttpResponse, String> {
+public class StringHandler<E extends HttpResponse> implements ResponseHandler<E, String> {
 
     @Override
-    public BasicResponse handle(HttpResponse httpResponse) throws IOException
-    {
+    public BasicResponse handle(E httpResponse) {
         try {
             HttpEntity entity = httpResponse.getEntity();
             String responseString = (Optional.ofNullable(entity).isPresent()) ? EntityUtils.toString(entity, Charset.defaultCharset()) : null;
