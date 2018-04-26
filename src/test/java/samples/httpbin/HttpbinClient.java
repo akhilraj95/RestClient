@@ -19,8 +19,7 @@ public class HttpbinClient extends RestClient {
     String getMyIP() throws ApplicationException {
         try {
             URI uri = new URI(host + "/ip");
-            HttpRequest<String> request  = new HttpRequest<String>.;
-            return call(HttpRequest.get(uri).build()).getBody();
+            return (String) call(HttpRequest.get(uri).build()).getBody();
         } catch (IOException | URISyntaxException e) {
             throw new ApplicationException();
         }
@@ -49,6 +48,6 @@ public class HttpbinClient extends RestClient {
 
     void getFile() throws URISyntaxException, IOException {
         URI uri = new URI(host + "/file");
-        Response<File> response = call(HttpRequest.get(uri).setHandler(new FileHandler()).build());
+        Response<File> response = (Response<File>) call(HttpRequest.get(uri).setHandler(new FileHandler()).build());
     }
 }
