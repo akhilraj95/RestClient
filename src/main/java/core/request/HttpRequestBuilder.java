@@ -5,7 +5,6 @@ import core.RequestType;
 import core.responsehandler.ResponseHandler;
 import lombok.Getter;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;

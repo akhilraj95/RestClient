@@ -25,21 +25,21 @@ public class HttpbinClient extends RestClient {
     }
 
     HttpbinResponse makeGetQueryWithParams() throws URISyntaxException, IOException {
-            URI uri = new URI(host + "/get?query1=value1");
-            return call(HttpRequest.get(uri).build()).as(HttpbinResponse.class);
+        URI uri = new URI(host + "/get?query1=value1");
+        return call(HttpRequest.get(uri).build()).as(HttpbinResponse.class);
     }
 
     HttpbinResponse makePostQueryWithBody() throws URISyntaxException, IOException {
-            URI uri = new URI(host + "/post");
-            Dto dto = new Dto(1, "httpclient");
+        URI uri = new URI(host + "/post");
+        Dto dto = new Dto(1, "httpclient");
 
-            return call(HttpRequest.post(uri).jsonEntity(dto).build()).as(HttpbinResponse.class);
+        return call(HttpRequest.post(uri).jsonEntity(dto).build()).as(HttpbinResponse.class);
     }
 
     File getFile() throws URISyntaxException, IOException {
         URI uri = new URI(host + "/file");
         Response<File> response = (Response<File>) call(HttpRequest.get(uri).setHandler(new FileHandler()).build());
-        if(response.getStatusCode()!=200) {
+        if (response.getStatusCode() != 200) {
             throw new RuntimeException("failed download");
         }
         return response.getBody();

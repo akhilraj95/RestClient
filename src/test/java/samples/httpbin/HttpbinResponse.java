@@ -11,8 +11,7 @@ import java.util.Map;
 @NoArgsConstructor
 @Setter
 @ToString
-public class HttpbinResponse<T>
-{
+public class HttpbinResponse<T> {
     private Map<String, String> args;
     private Map<String, String> headers;
     private String origin;

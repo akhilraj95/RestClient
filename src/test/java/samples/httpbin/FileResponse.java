@@ -6,6 +6,7 @@ import lombok.Getter;
 
 import java.io.File;
 import java.util.Map;
+
 @Getter
 @AllArgsConstructor
 public class FileResponse implements Response<File> {

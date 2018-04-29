@@ -1,7 +1,6 @@
 package core.request;
 
 
-import com.sun.jndi.toolkit.url.Uri;
 import core.EntityType;
 import core.RequestType;
 import core.responsehandler.ResponseHandler;

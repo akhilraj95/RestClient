@@ -8,8 +8,7 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
-public class Dto
-{
+public class Dto {
     int number;
     String name;
 }

@@ -8,13 +8,11 @@ import java.net.URISyntaxException;
 /**
  * Created by akhil raj azhikodan on 22/4/18.
  */
-public class HttpbinService
-{
+public class HttpbinService {
     static HttpbinClient httpbinClient = new HttpbinClient();
 
     @Test
-    public void printIP() throws ApplicationException
-    {
+    public void printIP() throws ApplicationException {
         System.out.println(httpbinClient.getMyIP());
     }
 

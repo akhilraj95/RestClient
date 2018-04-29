@@ -2,11 +2,15 @@ package apache;
 
 import apache.handler.StringHandler;
 import com.google.gson.Gson;
-import core.*;
+import core.EntityType;
+import core.NetClient;
+import core.RequestType;
 import core.request.HttpRequest;
 import core.response.Response;
 import core.responsehandler.ResponseHandler;
-import org.apache.http.*;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
