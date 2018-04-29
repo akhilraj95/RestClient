@@ -1,4 +1,4 @@
-package apache.handler;
+package samples.httpbin;
 
 import apache.ResponseHandlerException;
 import core.response.Response;
@@ -18,7 +18,7 @@ public class FileHandler implements ResponseHandler<HttpResponse, File> {
     private final String PREFIX = "ENDURANCE";
 
     @Override
-    public Response<File> handle(HttpResponse httpResponse) throws IOException {
+    public Response<File> handle(HttpResponse httpResponse) throws ResponseHandlerException {
         try {
             HttpEntity entity = httpResponse.getEntity();
             File tempFile = File.createTempFile(PREFIX, PREFIX);

@@ -1,7 +1,6 @@
 package samples.httpbin;
 
 import apache.RestClient;
-import apache.handler.FileHandler;
 import core.request.HttpRequest;
 import core.response.Response;
 
@@ -25,29 +24,24 @@ public class HttpbinClient extends RestClient {
         }
     }
 
-    HttpbinResponse makeGetQueryWithParams() throws ApplicationException {
-        try {
+    HttpbinResponse makeGetQueryWithParams() throws URISyntaxException, IOException {
             URI uri = new URI(host + "/get?query1=value1");
-
             return call(HttpRequest.get(uri).build()).as(HttpbinResponse.class);
-        } catch (IOException | URISyntaxException e) {
-            throw new ApplicationException();
-        }
     }
 
-    HttpbinResponse makePostQueryWithBody() throws ApplicationException {
-        try {
+    HttpbinResponse makePostQueryWithBody() throws URISyntaxException, IOException {
             URI uri = new URI(host + "/post");
             Dto dto = new Dto(1, "httpclient");
 
             return call(HttpRequest.post(uri).jsonEntity(dto).build()).as(HttpbinResponse.class);
-        } catch (IOException | URISyntaxException e) {
-            throw new ApplicationException();
-        }
     }
 
-    void getFile() throws URISyntaxException, IOException {
+    File getFile() throws URISyntaxException, IOException {
         URI uri = new URI(host + "/file");
         Response<File> response = (Response<File>) call(HttpRequest.get(uri).setHandler(new FileHandler()).build());
+        if(response.getStatusCode()!=200) {
+            throw new RuntimeException("failed download");
+        }
+        return response.getBody();
     }
 }

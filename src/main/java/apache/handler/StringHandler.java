@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class StringHandler<E extends HttpResponse> implements ResponseHandler<E, String> {
 
     @Override
-    public BasicResponse handle(E httpResponse) {
+    public BasicResponse handle(E httpResponse) throws ResponseHandlerException {
         try {
             HttpEntity entity = httpResponse.getEntity();
             String responseString = (Optional.ofNullable(entity).isPresent()) ? EntityUtils.toString(entity, Charset.defaultCharset()) : null;

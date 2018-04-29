@@ -1,4 +1,4 @@
-package apache.handler;
+package samples.httpbin;
 
 import core.response.Response;
 import lombok.AllArgsConstructor;

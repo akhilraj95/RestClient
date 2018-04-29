@@ -1,6 +1,8 @@
 package apache;
 
-public class ResponseHandlerException extends RuntimeException{
+import java.io.IOException;
+
+public class ResponseHandlerException extends IOException {
     public ResponseHandlerException() {
     }
 
@@ -16,7 +18,4 @@ public class ResponseHandlerException extends RuntimeException{
         super(cause);
     }
 
-    public ResponseHandlerException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
-    }
 }
