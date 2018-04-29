@@ -1,6 +1,6 @@
 package apache.handler;
 
-import apache.ResponseHandlerException;
+import core.exception.ResponseHandlerException;
 import core.response.BasicResponse;
 import core.responsehandler.ResponseHandler;
 import org.apache.http.Header;

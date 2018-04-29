@@ -1,6 +1,6 @@
 package samples.httpbin;
 
-import apache.ResponseHandlerException;
+import core.exception.ResponseHandlerException;
 import core.response.Response;
 import core.responsehandler.ResponseHandler;
 import org.apache.http.Header;

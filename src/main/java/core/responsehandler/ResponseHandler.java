@@ -1,6 +1,6 @@
 package core.responsehandler;
 
-import apache.ResponseHandlerException;
+import core.exception.ResponseHandlerException;
 import core.response.Response;
 
 public interface ResponseHandler<E, T> {
